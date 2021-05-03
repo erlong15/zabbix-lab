@@ -28,14 +28,14 @@ Vagrant.configure(2) do |config|
   end  
   config.vm.define vmname3 do |subconfig|
     subconfig.vm.synced_folder "./", "/otus", type: 'virtualbox'
-    subconfig.vm.box = "bento/ubuntu-18.04"
+    subconfig.vm.box = "mrg/ansible"
     subconfig.vm.hostname = vmname3
     subconfig.vm.network :private_network, ip: "192.168.50.13" 
     subconfig.vm.provider "virtualbox" do |vb|
       vb.memory = "512"
       vb.cpus = "2" 
     end
-    subconfig.vm.provision "shell", inline: $script
+    #subconfig.vm.provision "shell", inline: $script
   end
 
 end
