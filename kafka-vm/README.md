@@ -90,8 +90,9 @@ ls -l /etc/kafka/
 
 ## коtнсольная утилита kafkacat 
 
-vagrant ssh ansible
+- vagrant ssh ansible
 
+```bash
 sudo apt-get install kafkacat
 export kafka=192.168.50.12:9092
 
@@ -100,6 +101,6 @@ kafkacat -L -b  $kafka
 kafkacat -b $kafka -C -t otus -o beginning 
 kafkacat -C -b $kafka -t otus -o -3 -e -p 0
 kafkacat -b $kafka -t otus -X list
-
+```
 
 ---
