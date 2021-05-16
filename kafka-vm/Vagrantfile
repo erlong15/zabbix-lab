@@ -1,0 +1,54 @@
+ansible = "ansible"
+kafka1 = "kafka1"
+kafka2 = "kafka2"
+kafka3 = "kafka3"
+
+$script = <<-'SCRIPT'
+pip3 install ansible
+SCRIPT
+
+Vagrant.configure(2) do |config|
+  config.vm.define ansible do |subconfig|
+    subconfig.vm.synced_folder "./", "/otus", type: 'virtualbox'
+    subconfig.vm.box = "mrg/ansible"
+    subconfig.vm.hostname = ansible
+    subconfig.vm.network :private_network, ip: "192.168.50.11" 
+    subconfig.vm.provider "virtualbox" do |vb|
+      vb.memory = "512"
+      vb.cpus = "2" 
+    end
+  end
+  config.vm.define kafka1 do |subconfig|
+    subconfig.vm.synced_folder "./", "/otus", type: 'virtualbox'
+    subconfig.vm.box = "bento/ubuntu-18.04"
+    subconfig.vm.hostname = kafka1
+    subconfig.vm.network :private_network, ip: "192.168.50.12" 
+    subconfig.vm.provider "virtualbox" do |vb|
+      vb.memory = "2048"
+      vb.cpus = "2" 
+    end
+  end  
+  config.vm.define kafka2 do |subconfig|
+    subconfig.vm.synced_folder "./", "/otus", type: 'virtualbox'
+    subconfig.vm.box = "bento/ubuntu-18.04"
+    subconfig.vm.hostname = kafka2
+    subconfig.vm.network :private_network, ip: "192.168.50.13" 
+    subconfig.vm.provider "virtualbox" do |vb|
+      vb.memory = "2048"
+      vb.cpus = "2" 
+    end
+    #subconfig.vm.provision "shell", inline: $script
+  end
+  config.vm.define kafka3 do |subconfig|
+    subconfig.vm.synced_folder "./", "/otus", type: 'virtualbox'
+    subconfig.vm.box = "bento/ubuntu-18.04"
+    subconfig.vm.hostname = kafka3
+    subconfig.vm.network :private_network, ip: "192.168.50.14" 
+    subconfig.vm.provider "virtualbox" do |vb|
+      vb.memory = "2048"
+      vb.cpus = "2" 
+    end
+    #subconfig.vm.provision "shell", inline: $script
+  end
+end
+

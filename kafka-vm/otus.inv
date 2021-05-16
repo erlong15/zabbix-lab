@@ -1,0 +1,18 @@
+[all:vars]
+ansible_connection=ssh
+ansible_user=vagrant
+ansible_ssh_pass=vagrant
+ansible_python_interpreter=/usr/bin/python3
+
+[ansible]
+ansible ansible_host=192.168.50.11 ansible_nodename=ansible
+
+[kafka]
+kafka1 kafka_broker_id=1 ansible_host=192.168.50.12
+kafka2 kafka_broker_id=2 ansible_host=192.168.50.13
+kafka3 kafka_broker_id=3 ansible_host=192.168.50.14
+
+[zookeeper-nodes]
+kafka1 zookeeper_id=1 ansible_host=192.168.50.12 ansible_nodename=kafka1
+kafka2 zookeeper_id=2 ansible_host=192.168.50.13 ansible_nodename=kafka2
+kafka3 zookeeper_id=3 ansible_host=192.168.50.14 ansible_nodename=kafka3
