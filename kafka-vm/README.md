@@ -5,6 +5,9 @@ vagrant ssh ansible
 ```bash
 sudo apt-get install sshpass -y
 ansible-galaxy install sleighzy.zookeeper sleighzy.kafka
+sudo pip3 install docker
+ansible-galaxy collection install community.docker
+
 export ANSIBLE_HOST_KEY_CHECKING=False
 ansible-playbook -i otus.inv kafka.yml
 ```
@@ -104,3 +107,74 @@ kafkacat -b $kafka -t otus -X list
 ```
 
 ---
+
+## Демонстрация работы kowl
+
+- откроем kowl: http://192.168.50.11:8080
+- продемонстрируем работу интерфейса
+    - брокеры
+    - топики
+
+---
+
+## Демонстрация работы консюмер групп
+
+- создадим 4 коннекта к vm  ansible
+- cd /otus
+- запустим одного продюссера
+    - python3 kafka-producer.py
+- запустим одного коснюмера
+    - python3 kafka-consumer.py
+- откроем kowl: http://192.168.50.11:8080
+    - проанализируем работу консюмер групп
+    - проверим лаг
+- проанализируем поведение 
+    - при добавлении еще консюмеров
+    - при отключении одной из нод кластера
+
+---
+
+## kafka-connect демонстрация
+
+```bash
+cd /otus
+/opt/kafka/bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 3 --partitions 3 --topic connect-test
+echo -e "foo\nbar" > test.txt
+more /opt/kafka/config/connect-standalone.properties
+more /opt/kafka/config/connect-file-source.properties
+more /opt/kafka/config/connect-file-sink.properties
+# запустим kafka-connect worker для пайплайна данных test.txt -> topic: connect-test -> test.sink.txt
+/opt/kafka/bin/connect-standalone.sh /opt/kafka/config/connect-standalone.properties /opt/kafka/config/connect-file-source.properties /opt/kafka/config/connect-file-sink.properties
+# Проверим данные в топике
+/opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic connect-test --from-beginning
+```
+
+---
+
+## kafka-connect REST API
+
+- vagrant ssh kafka1
+```bash
+/opt/kafka/bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 3 --partitions 3 --topic kafka-connect-logs
+# запустим worker
+more /etc/kafka/connect-distributed.properties
+./connect-distributed.sh /etc/kafka/connect-distributed.properties
+# в другом терминале
+curl http://localhost:8083/connector-plugins | jq
+
+curl -X POST -H 'Content-Type: application/json' -d '{
+     "name": "first-connector",
+     "config": {
+         "connector.class": "FileStreamSource",
+         "tasks.max": 1,
+         "file": "/var/log/kafka/server.log",
+         "topic": "kafka-connect-logs"
+     }
+   }' http://localhost:8083/connectors
+
+curl http://localhost:8083/connectors | jq
+
+curl http://localhost:8083/connectors/first-connector | jq
+
+ /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic kafka-connect-logs --from-beginning
+```

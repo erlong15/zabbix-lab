@@ -1,20 +1,11 @@
-  - hosts: ansible
-    become: yes  
-    tasks:
-      - name: Build hosts file
-        lineinfile:
-          dest: /etc/hosts
-          regexp: '.*{{ item }}$'
-          line: '{{ hostvars[item].ansible_host }} {{item}}'
-          state: present
-        with_items: '{{ groups["kafka"] }}'   
-
   - hosts: kafka
     become: yes  
     pre_tasks:
       - name: Install Java 8 (OpenJDK)
         apt:
-          name: openjdk-8-jre-headless
+          pkg: 
+            - openjdk-8-jre-headless
+            - jq
           state: present
           update_cache: yes
         tags:
@@ -31,6 +22,37 @@
       - role: sleighzy.kafka
         kafka_java_heap: -Xms1G -Xmx1G
         kafka_zookeeper_connect: '192.168.50.12:2181,192.168.50.13:2181,192.168.50.14:2181'
-        kafka_bootstrap_servers: '192.168.50.12:9092,192.168.50.13:9092,192.168.50.14:9092'
-        kafka_consumer_bootstrap_servers: '192.168.50.12:9092,192.168.50.13:9092,192.168.50.14:9092'
+        kafka_bootstrap_servers: "kafka1:9092,kafka2:9092,kafka3:9092"
+        kafka_consumer_bootstrap_servers: "kafka1:9092,kafka2:9092,kafka3:9092"
         kafka_listener_hostname: ""
+        kafka_connect_bootstrap_servers: "kafka1:9092,kafka2:9092,kafka3:9092"
+        
+
+  - hosts: ansible
+    become: yes
+    tags: ansible
+    tasks:
+      - name: Build hosts file
+        lineinfile:
+          dest: /etc/hosts
+          regexp: '.*{{ item }}$'
+          line: '{{ hostvars[item].ansible_host }} {{item}}'
+          state: present
+        with_items: '{{ groups["kafka"] }}'
+      - name: Install and start docker 
+        apt:
+          name: docker.io
+          state: present
+          update_cache: yes
+      - name: start kowl in docker
+        community.docker.docker_container:
+          name: kowl
+          image: quay.io/cloudhut/kowl:master
+          env:
+            KAFKA_BROKERS: "kafka1:9092,kafka2:9092,kafka3:9092"
+          ports:
+            - "8080:8080"
+          etc_hosts:
+            kafka1: 192.168.50.12       
+            kafka2: 192.168.50.13       
+            kafka3: 192.168.50.14       
