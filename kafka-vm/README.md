@@ -7,7 +7,7 @@ sudo apt-get install sshpass -y
 ansible-galaxy install sleighzy.zookeeper sleighzy.kafka
 sudo pip3 install docker
 ansible-galaxy collection install community.docker
-
+cd /otus
 export ANSIBLE_HOST_KEY_CHECKING=False
 ansible-playbook -i otus.inv kafka.yml
 ```
@@ -26,9 +26,10 @@ ls -l /etc/kafka/
 
 ## check config 
 
+```bash
 ./kafka-configs.sh --bootstrap-server localhost:9092 --describe --all --entity-type brokers
 ./kafka-configs.sh --bootstrap-server localhost:9092 --describe --all --broker 1 
-
+```
 ---
 
 ## Create topic
